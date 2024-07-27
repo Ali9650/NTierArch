@@ -1,5 +1,6 @@
 ﻿using Application.Services.Abstract;
 using Core.Entities;
+using Core.Extensions;
 using Core.Messages;
 using Data.Contexts;
 using Data.Repositories.Abstract;
@@ -16,13 +17,15 @@ namespace Application.Services.Concrete
 {
     public class StudentService : IStudentService
     {
-        private static readonly UniOfWork _uniOfWork;
-         static StudentService()
+        private  readonly UniOfWork _uniOfWork;
+        private readonly StudentRepository _studentRepository;
+        private readonly GroupRepository _groupRepository;
+        public StudentService()
         {
             _uniOfWork = new UniOfWork();
         }
         
-            public static void GetAllStudents()
+            public  void GetAllStudents()
             {
                 foreach (var student in _uniOfWork.Students.GetAll())
                 {
@@ -30,7 +33,7 @@ namespace Application.Services.Concrete
                 }
             }
 
-            public  static void AddStudent()
+            public   void AddStudent()
             {
             StudentNameInput: Messages.InputMessages("Student name");
                 string name = Console.ReadLine();
@@ -51,19 +54,19 @@ namespace Application.Services.Concrete
 
            
 
-            GroupList: GroupService.GetAllGroups();
+            GroupList: _groupRepository.GetAll();
 
                 Messages.InputMessages("Group id");
                 string groupIdInput = Console.ReadLine();
-                int id;
-                isSucceeded = int.TryParse(groupIdInput, out id);
+                int id;        
+                bool isSucceeded = int.TryParse(groupIdInput, out id);
                 if (!isSucceeded)
                 {
                     Messages.InvalidInputMeesages("Group id");
                     goto GroupList;
                 }
 
-                var group = _uniOfWork.Groups.Find(id);
+                var group = _uniOfWork.Groups.Get(id);
                 if (group is null)
                 {
                     Messages.NotFountMessage("Group");
@@ -92,7 +95,7 @@ namespace Application.Services.Concrete
 
             }
 
-            public static void UpdateStudent()
+            public  void UpdateStudent()
             {
             StudentIdInput: GetAllStudents();
                 Messages.InputMessages("student id");
@@ -104,7 +107,7 @@ namespace Application.Services.Concrete
                     Messages.InvalidInputMeesages("student id");
                     goto StudentIdInput;
                 }
-                var existStudent = _uniOfWork.Students.Find(studentId);
+                var existStudent = _uniOfWork.Students.Get (studentId);
                 if (existStudent is null)
                 {
                     Messages.NotFountMessage("student");
@@ -149,7 +152,7 @@ namespace Application.Services.Concrete
                 }
             
                 int Groupid = existStudent.GroupId;
-                if (_uniOfWork.Groups.Count() > 1)
+                if (_uniOfWork.Groups.GetAll().Count > 1)
                 {
                 GroupInput: Messages.WantToChangeMessage("group");
                     input = Console.ReadLine();
@@ -161,7 +164,7 @@ namespace Application.Services.Concrete
                     }
                     if (answer == 'y')
                     {
-                    Groupid: GroupService.GetAllGroups();
+                    Groupid: _groupRepository.GetAll();
                         Messages.InputMessages("group id");
                         string GroupIdInput = Console.ReadLine();
                         issucceeded = int.TryParse(GroupIdInput, out Groupid);
@@ -170,7 +173,7 @@ namespace Application.Services.Concrete
                             Messages.InvalidInputMeesages("group id");
                             goto GroupInput;
                         }
-                        var ExistGroup = _uniOfWork.Groups.FirstOrDefault(x => x.Id != existStudent.GroupId && x.Id == Groupid);
+                        var ExistGroup = _studentRepository.GetByIdWithGroups(Groupid); 
                         if (ExistGroup is null)
                         {
                             Messages.NotFountMessage("id");
@@ -179,7 +182,7 @@ namespace Application.Services.Concrete
                     }
                 }
                 existStudent.Name = Name;
-                existStudent.Surname = surnameinput;
+                existStudent.Surmame = surnameinput;
                 existStudent.GroupId = Groupid;
 
                 _uniOfWork.Students.Update(existStudent);
@@ -197,7 +200,7 @@ namespace Application.Services.Concrete
 
             }
 
-            public static void DeleteStudent()
+            public  void DeleteStudent()
             {
                 GetAllStudents();
             InputStudentId: Messages.InputMessages("student id");
@@ -210,13 +213,12 @@ namespace Application.Services.Concrete
                     goto InputStudentId;
                 }
 
-                var student = _uniOfWork.Students.Find(studentId);
+                var student = _uniOfWork.Students.Get(studentId);
                 if (student is null)
                 {
                     Messages.NotFountMessage("student");
                     return;
                 }
-                student.IsDeleted = true;
                 _uniOfWork.Students.Update(student);
                 try
                 {
@@ -230,7 +232,7 @@ namespace Application.Services.Concrete
                 Messages.SuccessMessages("Student", "deleted");
             }
 
-            public static void GetDetailsofStudent()
+            public  void GetDetailsofStudent()
             {
                 GetAllStudents();
             InputStudentId: Messages.InputMessages("Student id");
@@ -242,7 +244,7 @@ namespace Application.Services.Concrete
                     Messages.InvalidInputMeesages("Student id");
                     goto InputStudentId;
                 }
-                var student = _uniOfWork.Students.Include(x => x.Group).FirstOrDefault(x => x.Id == studentId);
+                var student = _studentRepository.GetByIdWithGroups(studentId);  
 
                 if (student == null)
                 {
@@ -250,11 +252,11 @@ namespace Application.Services.Concrete
                     return;
                 }
 
-                Console.WriteLine($"{student.Name}, {student.Surname}, {student.Email}, {student.BirthDate}, {student.Group.Name}");
+                Console.WriteLine($"{student.Name}, {student.Surmame}, {student.Group.Name}");
 
 
             }
 
         }
     }
-}
+

@@ -10,17 +10,21 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Data.Repositories.Concrete;
+using Core.Extensions;
 
 namespace Application.Services.Concrete
 {
     public class GroupService : IGroupService
     {
-        private static readonly UniOfWork _uniOfWork;
+        private  readonly UniOfWork _uniOfWork;
+        private readonly GroupRepository _groupRepository;
 
-        static GroupService()
+        public GroupService()
         {
-            _uniOfWork = new UniOfWork();
-        }
+            _uniOfWork = new UniOfWork();         
+        }    
+        
         public void GetAllGroups()
         {
             foreach (var group in _uniOfWork.Groups.GetAll())
@@ -35,14 +39,14 @@ namespace Application.Services.Concrete
                 Messages.InvalidInputMeesages("Group Name");
                 goto GroupNameInput;
             }
+         
+            var existGroup = _groupRepository.GetByName(name);
 
-            //var existGroup = _uniOfWork.Groups.FirstOrDefault(x => x.Name.ToLower() == name.ToLower());
-
-            //if (existGroup is not null)
-            //{
-            //    Messages.AlreadyExistMessage($"Group name - {name}");
-            //    goto GroupNameInput;
-            //}
+            if (existGroup is not null)
+            {
+                Messages.AlreadyExistMessage($"Group name - {name}");
+                goto GroupNameInput;
+            }
 
         GroupLimitInput: Messages.InputMessages("Group limit");
             string limitInput = Console.ReadLine();
@@ -90,7 +94,7 @@ namespace Application.Services.Concrete
                 Messages.NotFountMessage("group");
                 goto GroupIdInput;
             }
-            string Name = existGroup.Name;
+            string Name = existGroup.Name;      
         GroupNameInput: Messages.WantToChangeMessage("name");
             string input = Console.ReadLine();
             issucceeded = char.TryParse(input, out char answer);
@@ -109,7 +113,7 @@ namespace Application.Services.Concrete
                     Messages.InvalidInputMeesages("name");
                     goto NameInput;
                 }
-                var ExistGroupName = _uniOfWork.Groups.FirstOrDefault(n => n.Name.ToLower() == Name.ToLower() && n.Id != groupId);
+                var ExistGroupName = _groupRepository.GetByName(Name);
                 if (ExistGroupName is not null)
                 {
                     Messages.AlreadyExistMessage("group name");
@@ -134,11 +138,6 @@ namespace Application.Services.Concrete
                 {
                     Messages.InvalidInputMeesages("limit");
                     goto LimitInput;
-                }
-                var CountStudentsInGroup = _uniOfWork.Students.Where(x => x.GroupId == groupId).Count();
-                if (CountStudentsInGroup > Limit)
-                {
-                    Messages.WarningMessage("limit");
                 }
             }
         
@@ -171,14 +170,14 @@ namespace Application.Services.Concrete
                 Messages.InvalidInputMeesages("Group id");
                 goto InputGroupId;
             }
-            var group = _uniOfWork.Groups.Find(groupId);
+            var group = _groupRepository.Get(groupId);
             if (group is null)
             {
                 Messages.NotFountMessage("Group");
                 return;
             }
 
-            group.IsDeleted = true;
+            
             _uniOfWork.Groups.Update(group);
             try
             {
@@ -204,7 +203,7 @@ namespace Application.Services.Concrete
                 Messages.InvalidInputMeesages("Group id");
                 goto InputGroupId;
             }
-            var group = _uniOfWork.Groups.Include(x => x.Students).FirstOrDefault(x => x.Id == groupId);
+            var group = _groupRepository.GetByIdWithStudents(groupId);
             if (group is null)
             {
                 Messages.NotFountMessage("Group");
@@ -212,7 +211,7 @@ namespace Application.Services.Concrete
             }
             foreach (var student in group.Students)
             {
-                Console.WriteLine($"{student.Name}, {student.Surname}");
+                Console.WriteLine($"{student.Name}, {student.Surmame}");
             }
         }
     }

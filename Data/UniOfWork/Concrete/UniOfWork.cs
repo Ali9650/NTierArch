@@ -34,6 +34,7 @@ namespace Data.UniOfWork.Concrete
             {
                 Messages.ErrorOccuredMessage();
             }
+        }     
         }
     }
-}
+

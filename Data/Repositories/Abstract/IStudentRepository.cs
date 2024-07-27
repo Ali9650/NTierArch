@@ -10,6 +10,7 @@ namespace Data.Repositories.Abstract
 {
     public interface IStudentRepository :IRepository<Student>
     {
-      
+        Student GetByIdWithGroups (int id); 
+        Student GetByName (string name);
     }
 }

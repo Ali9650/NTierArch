@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace Data.Repositories.Abstract
 {
-    public interface IGroupRepository :IRepository<Group>
+    public interface IGroupRepository : IRepository<Group>
     {
-          
+        Group GetByName(string name);
+        Group GetByIdWithStudents(int id);
+
     }
 }

@@ -8,7 +8,7 @@ public static class Program
 {
     private static readonly GroupService _groupService;
     private static readonly StudentService _studentService;
-    static Program()
+     static Program()
     {
         _groupService = new GroupService();
         _studentService = new StudentService();
@@ -28,34 +28,35 @@ public static class Program
             {
                 switch ((Operations)choice)
                 {
-                    case Operations.AllGroups: 
-                        GroupService.
+                    case Operations.AllGroups:
+                        _groupService.GetAllGroups();
                             break;
                     case Operations.CreateGroup:
-                        GroupService.AddGroup();
+                        _groupService.AddGroup();
                         break;
                     case Operations.UpdateGroup:
-                        GroupService.UpdateGroup();
+                        _groupService.UpdateGroup();
                         break;
                     case Operations.DeleteGroup:
+                        _groupService.DeleteGroup();
                         break;
                     case Operations.DetailsGroup:
-                        GroupService.GetDetailsofGroup();
+                        _groupService.GetDetailsofGroup();
                         break;
                     case Operations.AllStudents:
-                        StudentService.GetAllStudents();
+                        _studentService.GetAllStudents();
                         break;
                     case Operations.CreateStudent:
-                        StudentService.AddStudent();
+                        _studentService.AddStudent();
                         break;
                     case Operations.UpdateStudent:
-                        StudentService.UpdateStudent();
+                        _studentService.UpdateStudent();
                         break;
                     case Operations.DeleteStudent:
-                        StudentService.DeleteStudent();
+                        _studentService.DeleteStudent();
                         break;
                     case Operations.DetailsStudent:
-                        StudentService.GetDetailsofStudent();
+                        _studentService.GetDetailsofStudent();
                         break;
                     case Operations.Exit:
                         return;
@@ -86,5 +87,5 @@ public static class Program
         Console.WriteLine("0. Exit");
     }
 }
-    }
-}
+    
+
